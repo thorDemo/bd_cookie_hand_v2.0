@@ -55,19 +55,20 @@ class BaiduSubmit:
                 code = resp.status_code
                 if code != 200:
                     failure_count += 1
-                    self._drop_cookie()
                     self._change_cookie()
-                    print('cookie 异常')
+                    print('返回代码异常')
                 else:
                     resp_entity = json.loads(resp.text)
                     if "status" not in resp_entity or resp_entity["status"] != 0:
                         failure_count += 1
                         self._drop_cookie()
                         self._change_cookie()
+                        print(resp_entity)
                     else:
                         success_count += 1
             except Exception:
                 failure_count += 1
+                print('服务器异常')
             this_time = datetime.now()
             spend = this_time - start_time
             if int(spend.seconds) == 0:
