@@ -5,6 +5,7 @@ import requests
 import sys
 from configparser import ConfigParser
 from datetime import datetime
+import time
 
 success_count = 0
 failure_count = 0
@@ -47,6 +48,7 @@ class BaiduSubmit:
         global failure_count
         global success_count
         while True:
+
             url = ''
             code = 233
             try:
@@ -67,9 +69,11 @@ class BaiduSubmit:
                     else:
                         print('成功！')
                         success_count += 1
-            except Exception:
+            except Exception as e:
+                print(e)
                 failure_count += 1
                 print('服务器异常')
+                time.sleep(3)
             # this_time = datetime.now()
             # spend = this_time - start_time
             # if int(spend.seconds) == 0:
