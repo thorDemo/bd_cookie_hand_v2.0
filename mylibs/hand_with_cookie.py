@@ -1,13 +1,24 @@
 import json
 import queue
-import threading
+from tools.push_tools import PushTool
 import requests
+import sys
+from configparser import ConfigParser
+from datetime import datetime
+
+success_count = 0
+failure_count = 0
+start_time = datetime.now()
+cookie = PushTool.get_cookies()
+config = ConfigParser()
+config.read('config.ini', 'utf-8')
+target = config.get('bd_push', 'target')
+
 
 _COOKIE_FILE = "mylibs/cookie.txt"
 _COOKIE_FILE_INVALID = "mylibs/cookie-invalid.txt"
 _COOKIE_EXPIRE_COUNT = 10
 _THREAD_SIZE = 2
-# _PROXY_CONF = json.load(open(app_env.get_app_root() + "/baidu_submit/proxy.json", encoding="UTF-8"))
 
 
 class BaiduSubmit:
@@ -15,31 +26,11 @@ class BaiduSubmit:
         self._refill_cookies()
         self._change_cookie()
         self._url_buffer = queue.Queue()
-        self.start_buffer_consumer()
 
     def _refill_cookies(self):
         all_cookies = [line.strip() for line in open(_COOKIE_FILE, encoding="UTF-8")]
         invalid_cookies = set([line.strip() for line in open(_COOKIE_FILE_INVALID, encoding="UTF-8")])
         self._cookies = list(filter(lambda cookie: cookie not in invalid_cookies, all_cookies))
-
-    # def _change_proxy(self):
-    #     while True:
-    #         proxy_resp = requests.get(
-    #             _PROXY_REPO.format(_PROXY_CONF["spiderId"], _PROXY_CONF["orderNo"]))
-    #         print("got next proxy: " + proxy_resp.text)
-    #         proxy = json.loads(proxy_resp.text)["RESULT"][0]
-    #         proxy = {"http": proxy["ip"] + ":" + proxy["port"], "https": proxy["ip"] + ":" + proxy["port"]}
-    #         try:
-    #             resp = requests.get(url="https://m.baidu.com", timeout=10, proxies=proxy)
-    #             resp.encoding = "UTF-8"
-    #             if resp.text.find("百度") > 0:
-    #                 self._proxy = proxy
-    #                 print("change proxy.")
-    #                 break
-    #         except Exception as e:
-    #             pass
-    #         print("proxy not available, try next")
-    #         time.sleep(5)
 
     def _drop_cookie(self):
         with open(_COOKIE_FILE_INVALID, mode="a", encoding="UTF-8") as f:
@@ -51,44 +42,43 @@ class BaiduSubmit:
         self._cookie = self._cookies.pop()
         print("change cookie.")
 
-    def start_buffer_consumer(self):
-        threading.Thread(target=self._consume_buffer)
-
-    def _consume_buffer(self):
-        while True:
-            self.submit(self._url_buffer.get().url)
-
     def submit(self, num):
-        retry_times = 0
+        global target
+        global failure_count
+        global success_count
         while True:
+            url = ''
+            code = 233
             try:
-
+                url = PushTool.rand_all(target)
                 resp, url = self._do_submit(url)
-                if resp.status_code != 200:
-                    print("[retry {}]post error with code: {}".format(retry_times, resp.status_code))
-                    retry_times += 1
+                code = resp.status_code
+                if code != 200:
+                    failure_count += 1
                     self._change_cookie()
                 else:
                     resp_entity = json.loads(resp.text)
                     if "status" not in resp_entity or resp_entity["status"] != 0:
-                        print("[retry {}]post error with response: {}".format(retry_times, resp.text))
-                        retry_times += 1
+                        failure_count += 1
                         self._drop_cookie()
                         self._change_cookie()
                     else:
-                        # UrlLogger.get_instance("success").info(url)
-                        print(resp.text)
-                        print("url " + url + " done.")
-                        return True
-            except Exception as e:
-                print("[retry {}]post error with exception: {}".format(retry_times, repr(e)))
-                retry_times += 1
-                # self._change_proxy()
-
-            if retry_times >= 3:
-                # UrlLogger.get_instance("failed").info(url)
-                print("post error due to cookie and proxy both has been changed for limit times.")
-                return False
+                        success_count += 1
+            except Exception:
+                failure_count += 1
+            this_time = datetime.now()
+            spend = this_time - start_time
+            if int(spend.seconds) == 0:
+                speed_sec = success_count / 1
+            else:
+                speed_sec = success_count / int(spend.seconds)
+            speed_day = float('%.2f' % ((speed_sec * 60 * 60 * 24) / 10000000))
+            percent = success_count / (failure_count + success_count) * 100
+            sys.stdout.write(' ' * 100 + '\r')
+            sys.stdout.flush()
+            print(url)
+            sys.stdout.write('%s 成功%s 预计(day/千万):%s M 成功率:%.2f%% 状态码:%s\r' % (datetime.now(), success_count, speed_day, percent, code))
+            sys.stdout.flush()
 
     def _do_submit(self, url):
         url = url.strip()
@@ -110,5 +100,3 @@ class BaiduSubmit:
                              # proxies=self._proxy,
                              timeout=10)
         return resp, url
-
-
