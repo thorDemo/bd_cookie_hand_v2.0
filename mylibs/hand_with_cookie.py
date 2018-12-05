@@ -65,23 +65,24 @@ class BaiduSubmit:
                         self._change_cookie()
                         print(resp_entity)
                     else:
+                        print('成功！')
                         success_count += 1
             except Exception:
                 failure_count += 1
                 print('服务器异常')
-            this_time = datetime.now()
-            spend = this_time - start_time
-            if int(spend.seconds) == 0:
-                speed_sec = success_count / 1
-            else:
-                speed_sec = success_count / int(spend.seconds)
-            speed_day = float('%.2f' % ((speed_sec * 60 * 60 * 24) / 10000000))
-            percent = success_count / (failure_count + success_count) * 100
-            sys.stdout.write(' ' * 100 + '\r')
-            sys.stdout.flush()
-            print(url)
-            sys.stdout.write('%s 成功%s 预计(day/千万):%s M 成功率:%.2f%% 状态码:%s\r' % (datetime.now(), success_count, speed_day, percent, code))
-            sys.stdout.flush()
+            # this_time = datetime.now()
+            # spend = this_time - start_time
+            # if int(spend.seconds) == 0:
+            #     speed_sec = success_count / 1
+            # else:
+            #     speed_sec = success_count / int(spend.seconds)
+            # speed_day = float('%.2f' % ((speed_sec * 60 * 60 * 24) / 10000000))
+            # percent = success_count / (failure_count + success_count) * 100
+            # sys.stdout.write(' ' * 100 + '\r')
+            # sys.stdout.flush()
+            # print(url)
+            # sys.stdout.write('%s 成功%s 预计(day/千万):%s M 成功率:%.2f%% 状态码:%s\r' % (datetime.now(), success_count, speed_day, percent, code))
+            # sys.stdout.flush()
 
     def _do_submit(self, url):
         url = url.strip()
