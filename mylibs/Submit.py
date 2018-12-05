@@ -2,6 +2,7 @@ import json
 import queue
 import threading
 import requests
+from tools.push_tools import PushTool
 
 _COOKIE_FILE = "mylibs/cookie.txt"
 _COOKIE_FILE_INVALID = "mylibs/cookie-invalid.txt"
@@ -58,11 +59,10 @@ class BaiduSubmit:
         while True:
             self.submit(self._url_buffer.get().url)
 
-    def submit(self, num):
+    def submit(self, url):
         retry_times = 0
         while True:
             try:
-
                 resp, url = self._do_submit(url)
                 if resp.status_code != 200:
                     print("[retry {}]post error with code: {}".format(retry_times, resp.status_code))
@@ -94,7 +94,7 @@ class BaiduSubmit:
         url = url.strip()
         headers = {"Connection": "keep-alive",
                    "Origin": "https://ziyuan.baidu.com",
-                   "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36",
+                   "User-Agent": PushTool.user_agent(),
                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                    "Accept": "application/json, text/javascript, */*; q=0.01",
                    "X-Requested-With": "XMLHttpRequest",
@@ -107,7 +107,6 @@ class BaiduSubmit:
         resp = requests.post(url="https://ziyuan.baidu.com/linksubmit/urlsubmit",
                              data={"url": url},
                              headers=headers,
-                             # proxies=self._proxy,
                              timeout=10)
         return resp, url
 
