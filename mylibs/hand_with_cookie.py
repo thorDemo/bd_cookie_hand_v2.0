@@ -41,7 +41,7 @@ class BaiduSubmit:
         if not self._cookies:
             self._refill_cookies()
         self._cookie = self._cookies.pop()
-        print(self._cookie)
+        print("change cookie")
 
     def submit(self, num):
         global target
@@ -100,8 +100,7 @@ class BaiduSubmit:
                    "Referer": "https://ziyuan.baidu.com/linksubmit/url",
                    "Accept-Encoding": "gzip, deflate, br",
                    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7,mr;q=0.6",
-                   # "Cookie": self._cookie,
-                   "Cookie": "BIDUPSID=358AB784CA9B61AE0BB262CA5B63C31F; PSTM=1543830159; BAIDUID=10F2B0EDBCCA246B1096F100C2D54A10:FG=1; H_PS_PSSID=1433_21118_26350_27508; Hm_lvt_6f6d5bc386878a651cb8c9e1b4a3379a=1543888479; lastIdentity=PassUserIdentity; SIGNIN_UC=70a2711cf1d3d9b1a82d2f87d633bd8a02939879255; __cas__rn__=293987925; BDUSS=nU1fmdmVU92SThBRU8tNDQ0T3RxcFd3Zjhoa2g1cVdwZGZXYUxNeTZycHcyQzVjQVFBQUFBJCQAAAAAAAAAAAEAAABmnim80rvJ-tK7ysDWwtS2NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBLB1xwSwdcQ; SITEMAPSESSID=u4nn09u4gpfpm0ecq8pve8o9o5; delPer=0; PSINO=7; ZD_ENTRY=baidu; Hm_lpvt_6f6d5bc386878a651cb8c9e1b4a3379a=1544065450",
+                   "Cookie": self._cookie,
                    }
         resp = requests.post(url="https://ziyuan.baidu.com/linksubmit/urlsubmit",
                              data={"url": url},
