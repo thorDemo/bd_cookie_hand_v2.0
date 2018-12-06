@@ -41,7 +41,7 @@ class BaiduSubmit:
         if not self._cookies:
             self._refill_cookies()
         self._cookie = self._cookies.pop()
-        print("change cookie.")
+        print(self._cookie)
 
     def submit(self, num):
         global target
